@@ -1,9 +1,10 @@
 {
-  "name": "server",
+  "name": "@janiscommerce/server",
   "version": "1.0.0",
-  "description": "",
+  "description": "coming soon.",
   "main": "index.js",
   "scripts": {
+    "debug": "nodemon debug.js -p 3088 \"-w 1\"",
     "test": "export TEST_ENV=true; mocha --exit -R nyan --recursive tests/",
     "watch-test": "export TEST_ENV=true; mocha --exit -R nyan -w --recursive",
     "coverage": "nyc npm test"
@@ -21,5 +22,16 @@
   "dependencies": {
     "@janiscommerce/logger": "^1.1.0",
     "minimist": "^1.2.0"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://juanhapes@github.com/janis-commerce/server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/janis-commerce/server/issues"
+  },
+  "homepage": "https://github.com/janis-commerce/server#readme"
 }

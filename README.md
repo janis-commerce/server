@@ -1,6 +1,6 @@
 # Server
 
-Some great description
+coming soon.
 
 ## Installation
 
@@ -13,5 +13,7 @@ npm install @janiscommerce/server
 ```js
 const Server = require('@janiscommerce/server');
 
-new Server();
+new Server({
+
+});
 ```

@@ -27,22 +27,34 @@ class Server {
 
 	constructor({ cors = true, corsOptions, runProcesses = false } = {}) {
 
-		this.handleGracefulRestart();
+		this.parseArguments();
 
 		if(cluster.isMaster) {
+
+			this.handleGracefulRestart();
+
 			if(!this.constructor.isProduction())
 				logger.warn('Run with NODE_ENV="production" for better performance!');
 
 			return;
 		}
 
+		this.handleWorkerShutdown();
+
 		this.cors = cors;
 		this.corsOptions = corsOptions;
 		this.runProcesses = runProcesses;
 
-		this.parseArguments();
+		this.initialize();
+	}
 
+	async initialize() {
 
+		this.handleMessages();
+
+		// this.setupServer();
+
+		// this.callDevelopFunction();
 	}
 
 	/**
@@ -53,8 +65,6 @@ class Server {
 	*/
 
 	parseArguments() {
-
-		super.parseArguments();
 
 		const argv = minimist(process.argv.slice(2));
 
@@ -69,9 +79,6 @@ class Server {
 
 
 	handleGracefulRestart() {
-
-		if(!cluster.isMaster)
-			return this.handleWorkerShutdown();
 
 		const pidFile = path.join(__dirname, '.pid');
 
@@ -91,11 +98,56 @@ class Server {
 			// nodemon restart the process in development, no need for graceful cluster
 			// And it will conflict with node debug. SIGUSR1
 
-			shouldRestart: Server.isProduction(),
-			nodemon: !Server.isProduction()
+			shouldRestart: this.constructor.isProduction(),
+			nodemon: !this.constructor.isProduction()
 		});
 	}
 
+	handleWorkerShutdown() {
+
+		if(!this.constructor.isProduction()) {
+
+			// Nodemon kill signal
+			process.once('SIGUSR2', () => {
+				logger.info('SIGUSR2 received, shutting down gracefully');
+				this.shutdown();
+			});
+		}
+
+	}
+
+	/**
+	*	Server shutdown
+	*	@private
+	*/
+
+	shutdown() {
+
+		logger.info('Shutting down worker');
+
+		process.exit();
+	}
+
+	/**
+	*	Handle messages from master
+	*	@private
+	*
+	*/
+
+	handleMessages() {
+
+		if(!cluster.isWorker)
+			return;
+
+		process.on('message', msg => {
+
+			if(msg.cmd === 'disconnect') {
+				logger.warn(`disconnecting server ${process.pid}`);
+
+				this.shutdown();
+			}
+		});
+	}
 }
 
 module.exports = Server;

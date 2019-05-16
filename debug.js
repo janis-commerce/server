@@ -2,4 +2,4 @@
 
 const Server = require('./server');
 
-module.exports = Server;
+new Server();
