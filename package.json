@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "export TEST_ENV=true; mocha --exit -R nyan --recursive tests/",
+    "watch-test": "export TEST_ENV=true; mocha --exit -R nyan -w --recursive",
+    "coverage": "nyc npm test"
+  },
+  "author": "Janis",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0",
+    "nyc": "^14.1.0",
+    "sinon": "^7.3.2"
+  },
+  "dependencies": {
+    "@janiscommerce/logger": "^1.1.0",
+    "minimist": "^1.2.0"
+  }
+}
