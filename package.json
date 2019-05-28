@@ -1,7 +1,7 @@
 {
   "name": "@janiscommerce/server",
   "version": "1.0.0",
-  "description": "coming soon.",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "debug": "nodemon debug.js -p 3088 \"-w 1\"",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://juanhapes@github.com/janis-commerce/server.git"
+    "url": "git+https://github.com/janis-commerce/server.git"
   },
   "bugs": {
     "url": "https://github.com/janis-commerce/server/issues"

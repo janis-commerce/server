@@ -9,7 +9,14 @@ const os = require('os');
 
 const minimist = require('minimist');
 
+//
+
 const logger = require('@janiscommerce/logger');
+
+// const HTTPServer = require('@janiscommerce/http-server');
+const HTTPServer = require('./../../http-server');
+
+//
 
 const GracefulCluster = require('./graceful');
 
@@ -21,11 +28,11 @@ class Server {
 	*	@return {boolean} True if is production, false other wise
 	*/
 
-	static isProduction() {
+	static get isProduction() {
 		return process.env.NODE_ENV === 'production';
 	}
 
-	constructor({ cors = true, corsOptions, runProcesses = false } = {}) {
+	constructor(options) {
 
 		this.parseArguments();
 
@@ -33,7 +40,7 @@ class Server {
 
 			this.handleGracefulRestart();
 
-			if(!this.constructor.isProduction())
+			if(!this.constructor.isProduction)
 				logger.warn('Run with NODE_ENV="production" for better performance!');
 
 			return;
@@ -41,10 +48,7 @@ class Server {
 
 		this.handleWorkerShutdown();
 
-		this.cors = cors;
-		this.corsOptions = corsOptions;
-		this.runProcesses = runProcesses;
-
+		this.options = options || {};
 		this.initialize();
 	}
 
@@ -52,9 +56,8 @@ class Server {
 
 		this.handleMessages();
 
-		// this.setupServer();
-
-		// this.callDevelopFunction();
+		const httpServer = new HTTPServer(this.options);
+		httpServer.start();
 	}
 
 	/**
@@ -98,14 +101,14 @@ class Server {
 			// nodemon restart the process in development, no need for graceful cluster
 			// And it will conflict with node debug. SIGUSR1
 
-			shouldRestart: this.constructor.isProduction(),
-			nodemon: !this.constructor.isProduction()
+			shouldRestart: this.constructor.isProduction,
+			nodemon: !this.constructor.isProduction
 		});
 	}
 
 	handleWorkerShutdown() {
 
-		if(!this.constructor.isProduction()) {
+		if(!this.constructor.isProduction) {
 
 			// Nodemon kill signal
 			process.once('SIGUSR2', () => {
