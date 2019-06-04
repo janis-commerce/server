@@ -12,6 +12,8 @@
   "author": "Janis",
   "license": "ISC",
   "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
@@ -20,7 +22,14 @@
     "sinon": "^7.3.2"
   },
   "dependencies": {
+    "@janiscommerce/api": "^1.2.0",
     "@janiscommerce/logger": "^1.1.0",
+    "@janiscommerce/schema-validator": "^1.0.1",
+    "compression": "^1.7.4",
+    "connect-timeout": "^1.9.0",
+    "cookie-parser": "^1.4.4",
+    "express": "^4.17.1",
+    "helmet": "^3.18.0",
     "minimist": "^1.2.0"
   },
   "directories": {

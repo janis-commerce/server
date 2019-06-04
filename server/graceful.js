@@ -216,31 +216,33 @@ class GracefulCluster {
 	checkRestartQueue() {
 
 		// Kill one worker only if maximum count are working.
-		if(this.restartQueue.length && this.listeningWorkersCount === this.options.workersCount) {
-			const pid = this.restartQueue.shift();
+		if(!this.restartQueue.length ||
+			this.listeningWorkersCount !== this.options.workersCount)
+			return;
 
-			let worker;
+		const pid = this.restartQueue.shift();
 
-			Object.values(cluster.workers).forEach(item => {
-				if(pid === item.process.pid)
-					worker = item;
-			});
+		let worker;
 
-			try {
+		Object.values(cluster.workers).forEach(item => {
+			if(pid === item.process.pid)
+				worker = item;
+		});
 
-				// Send SIGTERM signal to worker. SIGTERM starts graceful shutdown of worker inside it.
-				worker.send({ cmd: 'disconnect' });
+		try {
 
-				worker.disconnect();
+			// Send SIGTERM signal to worker. SIGTERM starts graceful shutdown of worker inside it.
+			worker.send({ cmd: 'disconnect' });
 
-				logger.warn('Disconnecting worker!');
+			worker.disconnect();
 
-			} catch(ex) {
+			logger.warn('Disconnecting worker!');
 
-				// Fail silent on 'No such process'. May occur when kill message received after kill initiated but not finished.
-				if(ex.code !== 'ESRCH')
-					throw ex;
-			}
+		} catch(ex) {
+
+			// Fail silent on 'No such process'. May occur when kill message received after kill initiated but not finished.
+			if(ex.code !== 'ESRCH')
+				throw ex;
 		}
 	}
 
