@@ -3,6 +3,11 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
+const sandbox = require('sinon').createSandbox();
+
+const SchemaValidator = require('@janiscommerce/schema-validator');
+const API = require('@janiscommerce/api');
+
 const HTTPServer = require('./../server/http-server');
 
 /* eslint-disable prefer-arrow-callback */
@@ -17,22 +22,52 @@ describe('HTTPServer', function() {
 
 		chai.use(chaiHttp);
 
+		/*
+		 * If port is omitted or is 0, the operating system will assign an arbitrary unused port.
+		 * Esto es para que no escuche siempre en el 3001, requerido para cuando se usa el modo watch
+		 */
+		httpServer.PORT = 0;
 		httpServer.start();
-
 
 	});
 
-	it('something', function(done) {
+	afterEach(() => {
+		sandbox.restore();
+	});
+
+	it('should return 404: not found when validate rejects', function(done) {
+
+		sandbox
+			.stub(SchemaValidator.prototype, 'validate')
+			.throws('validate error');
 
 		chai
 			.request(httpServer.app)
-			.get('/')
+			.get('/api/unknown-endpoint')
 			.end((err, res) => {
-				console.log(err);
-
+				chai.should().not.exist(err);
+				chai.expect(res).to.have.status(404);
 				done();
 			});
+	});
 
+	it('should dispatch api when validate ok', function(done) {
+
+		sandbox
+			.stub(SchemaValidator.prototype, 'validate')
+			.returns(true);
+
+		sandbox
+			.stub(API.prototype, 'dispatch');
+
+		chai
+			.request(httpServer.app)
+			.get('/api/unknown-endpoint')
+			.end((err, res) => {
+				chai.should().not.exist(err);
+				chai.expect(res).to.have.status(200);
+				done();
+			});
 	});
 
 });

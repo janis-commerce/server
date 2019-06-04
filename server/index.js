@@ -67,10 +67,7 @@ class Server {
 	*/
 
 	parseArguments() {
-
 		const argv = minimist(process.argv.slice(2));
-
-		this.PORT = argv.p || 3001;
 		this.WORKERS_COUNT = argv.w || os.cpus().length - 1 || 1;
 	}
 
@@ -126,8 +123,18 @@ class Server {
 	shutdown() {
 
 		logger.info('Shutting down worker');
-
-		process.exit();
+/*
+		process.on('SIGTERM', () => {
+			console.info('SIGTERM signal received.');
+			console.log('Closing http server.');
+			this.server.close(() => {
+				console.log('Http server closed.');
+				// boolean means [force], see in mongoose doc
+				process.exit(0);
+			});
+		});
+*/
+		// process.exit();
 	}
 
 	/**

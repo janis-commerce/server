@@ -33,8 +33,6 @@ function enableShutdown(server) {
 
 	server.shutdown = callback => {
 
-		console.log('por aca??????????');
-
 		shutdownRequested = true;
 
 		server.close(err => {

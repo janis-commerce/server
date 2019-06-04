@@ -1,7 +1,5 @@
 'use strict';
 
-const http = require('http');
-
 const express = require('express');
 const minimist = require('minimist');
 
@@ -260,20 +258,14 @@ class HTTPServer {
 
 	async startServer() {
 
-		this.server = http.Server(this.app);
-
-		// this.beforeListenHook(this.server); // Hook
-
-		this.server.listen(this.PORT, () => {
+		const server = this.app.listen(this.PORT, () => {
 			logger.info(`listening on *:${this.PORT}`);
 		});
 
-		// await this.setupSocket(this.server);
-
-		// this.afterListenHook(this.server); // Hook
+		// await this.setupSocket(server);
 
 		// Without this, the server may never close.
-		enableShutdown(this.server);
+		enableShutdown(server);
 	}
 
 }
