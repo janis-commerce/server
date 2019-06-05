@@ -19,7 +19,6 @@ const cookieParser = require('cookie-parser');
 
 //
 
-const { healthcheckRoute, docsRoute } = require('./routes');
 const ServerError = require('./error');
 const enableShutdown = require('./close');
 
@@ -69,16 +68,13 @@ class HTTPServer {
 		this.app.enable('trust proxy'); // Without this BruteForoce && enforceSSL middlewares fail due to AWS Load Balancer.
 
 		// AWS Healthcheck route DO NOT MOVE, IT MUST BE THE FIRST MIDDLEWARE
-		healthcheckRoute(this.app);
+		this.healthcheckRoute();
 
 		// Use middlewares: timeout, compression, etc etc
 		this.useMiddlewares();
 
 		// Handle middleware errors. E.g body parser error.
 		this.app.use(ServerError.middleware);
-
-		// Handle docs
-		docsRoute(this.app);
 
 		// must be first than api requests because /api/view/... is more especifica than /api/...
 		// this.handleAPIViewRequests();
@@ -92,6 +88,12 @@ class HTTPServer {
 		this.app.use(ServerError.handleError);
 
 		return this.startServer();
+	}
+
+	healthcheckRoute() {
+		this.app.get('/aws/healthcheck', (req, res) => {
+			res.end();
+		});
 	}
 
 	/**

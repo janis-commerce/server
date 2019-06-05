@@ -123,18 +123,8 @@ class Server {
 	shutdown() {
 
 		logger.info('Shutting down worker');
-/*
-		process.on('SIGTERM', () => {
-			console.info('SIGTERM signal received.');
-			console.log('Closing http server.');
-			this.server.close(() => {
-				console.log('Http server closed.');
-				// boolean means [force], see in mongoose doc
-				process.exit(0);
-			});
-		});
-*/
-		// process.exit();
+
+		process.exit(0); // 0 is without error
 	}
 
 	/**

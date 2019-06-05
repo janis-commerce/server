@@ -35,6 +35,34 @@ describe('HTTPServer', function() {
 		sandbox.restore();
 	});
 
+	it('should end when healthcheck route', function(done) {
+
+		const spyValidator = sandbox.spy(SchemaValidator.prototype, 'validate');
+		const spyDispatcher = sandbox.spy(API.prototype, 'dispatch');
+
+		chai
+			.request(httpServer.app)
+			.get('/aws/healthcheck')
+			.end((err, res) => {
+
+				chai.should()
+					.not.exist(err);
+
+				chai.expect(res)
+					.to.have.status(200);
+
+				chai.expect(res.body)
+					.to.be.an('object')
+					.to.eql({});
+
+				sandbox.assert.notCalled(spyValidator);
+
+				sandbox.assert.notCalled(spyDispatcher);
+
+				done();
+			});
+	});
+
 	it('should return 404: not found when validate rejects', function(done) {
 
 		sandbox
