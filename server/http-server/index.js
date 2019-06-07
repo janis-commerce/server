@@ -7,6 +7,7 @@ const minimist = require('minimist');
 
 const SchemaValidator = require('@janiscommerce/schema-validator');
 const API = require('@janiscommerce/api');
+// const APIView = require('@janiscommerce/api-view');
 const logger = require('@janiscommerce/logger');
 
 /**
@@ -67,9 +68,6 @@ class HTTPServer {
 
 		this.app.enable('trust proxy'); // Without this BruteForoce && enforceSSL middlewares fail due to AWS Load Balancer.
 
-		// AWS Healthcheck route DO NOT MOVE, IT MUST BE THE FIRST MIDDLEWARE
-		this.healthcheckRoute();
-
 		// Use middlewares: timeout, compression, etc etc
 		this.useMiddlewares();
 
@@ -77,7 +75,7 @@ class HTTPServer {
 		this.app.use(ServerError.middleware);
 
 		// must be first than api requests because /api/view/... is more especifica than /api/...
-		// this.handleAPIViewRequests();
+		this.handleAPIViewRequests();
 
 		this.handleAPIRequests();
 
@@ -88,12 +86,6 @@ class HTTPServer {
 		this.app.use(ServerError.handleError);
 
 		return this.startServer();
-	}
-
-	healthcheckRoute() {
-		this.app.get('/aws/healthcheck', (req, res) => {
-			res.end();
-		});
 	}
 
 	/**
@@ -161,12 +153,60 @@ class HTTPServer {
 	}
 
 	/**
+	 * Handle API View Requests
+	 * 	endpoints:
+	 *			/api/view/:entity/:section/:method/path
+	 */
+	handleAPIViewRequests() {
+		const viewRoutes = '/api/view/:entity/:action/:method';
+		this.app.all([viewRoutes, `${viewRoutes}/:entityId`], this.APIViewHandler());
+	}
+
+	APIViewHandler() {
+		return [
+			// Add Allow origin
+			this.options.cors ? this.corsMiddleware() : null,
+
+			// Dispatch request
+			this.dispatchView.bind(this)
+		].filter(Boolean);
+	}
+
+	/**
+	 * Dispatch an API View
+	 *
+	 * @param {Function} APIHandler The api handler
+	 */
+
+	async dispatchView(req, res) {
+
+		logger.info(`VIEW Request: [${req.method}] ${req.originalUrl}`);
+
+		console.log(req.params);
+
+		const api = new API({
+			endpoint: req.params[0],
+			method: req.method.toLowerCase(),
+			data: req.method === 'GET' ? req.query : req.body,
+			headers: req.headers,
+			cookies: req.cookies
+		});
+
+		let result = await api.dispatch();
+		result = typeof result === 'object' && !Array.isArray(result) ? result : {};
+
+		res
+			.set(result.headers || {})
+			.status(result.code || 200)
+			.json(result.body || {});
+	}
+
+	/**
 	*	Handle API request.
 	*/
-
 	handleAPIRequests() {
-		const regexp = new RegExp('^/api((?:/(?:[a-z-]+)(?:/(?:[a-f0-9-]+))?)+)$', 'i');
-		this.app.all(regexp, this.APIHandler());
+		const apiRoutes = /^\/api((?:\/(?:[a-z-]+)(?:\/(?:[a-f0-9-]+))?)+)$/i;
+		this.app.all(apiRoutes, this.APIHandler());
 	}
 
 	/**
@@ -179,16 +219,8 @@ class HTTPServer {
 			// Add Allow origin
 			this.options.cors ? this.corsMiddleware() : null,
 
-			// Check Authorization: Bearer <token>
-			// this.auth.checkBearerToken.bind(this.auth),
-
-			this.validateSchema.bind(this),
-
-			// Check paging request headers
-			// APIPaging.middleware.bind(APIPaging),
-
-			// Check sort request parameters
-			// APISort.middleware.bind(APISort),
+			// Schema Validation OpenAPI 3.0 (public.json)
+			// this.validateSchema.bind(this),
 
 			// Dispatch request
 			this.dispatch.bind(this)
@@ -226,15 +258,17 @@ class HTTPServer {
 	}
 
 	/**
-	 * Returns a dispatcher express middleware
+	 * Dispatch an API
 	 *
-	 * @param {Function} APIHandler The api handler
-	 * @return {function} express middleware
+	 * @param {object} req The express request
+	 * @param {object} res The express response
 	 */
 
 	async dispatch(req, res) {
 
 		logger.info(`Request: [${req.method}] ${req.originalUrl}`);
+
+		console.log(req.params);
 
 		const api = new API({
 			endpoint: req.params[0],

@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@janiscommerce/api": "^1.2.0",
+    "@janiscommerce/api-view": "^1.0.0",
     "@janiscommerce/logger": "^1.1.0",
     "@janiscommerce/schema-validator": "^1.0.1",
     "compression": "^1.7.4",
