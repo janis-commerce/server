@@ -18,7 +18,7 @@ class ServerError {
 	*	@param {object} req - Express request object
 	*	@static
 	*/
-	static notFound(req, res, message) {
+	static notFound(req, res, next, message) {
 
 		message = message || 'Not found';
 
@@ -98,24 +98,6 @@ class ServerError {
 			.json({
 				error: true,
 				message: err && err.message ? err.message : 'Internal server error'
-			});
-	}
-
-	/**
-	*	Unauthorized request middleware
-	*	@param {object} res - Express response object
-	*	@param {object} req - Express request object
-	*	@static
-	*/
-	static unauthorized(req, res, message) {
-
-		logger.error(`Unauthorized: ${req.originalUrl} - IP: ${req.ip}`);
-
-		res
-			.status(httpCodes.UNAUTHORIZED)
-			.json({
-				error: true,
-				message: message || 'Unauthorized'
 			});
 	}
 

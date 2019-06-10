@@ -85,6 +85,11 @@ class HTTPServer {
 		// WARNING: This two middlewares must be called LAST!
 		this.app.use(ServerError.handleError);
 
+		this.app.use((req, res, next) => {
+			if(!req.timedout)
+				next();
+		});
+
 		return this.startServer();
 	}
 
@@ -232,14 +237,14 @@ class HTTPServer {
 
 		try {
 			schemaValidator = new SchemaValidator(req.path, req.method);
-		} catch(error) {
-			return ServerError.internalServerError(error, req, res);
+		} catch(err) {
+			return ServerError.internalServerError(err, req, res);
 		}
 
 		try {
 			schemaValidator.validate();
-		} catch(error) {
-			return ServerError.notFound(req, res, error.message);
+		} catch(err) {
+			return ServerError.notFound(req, res, next, err.message);
 		}
 
 		next();
@@ -277,10 +282,19 @@ class HTTPServer {
 		let result = await api.dispatch();
 		result = typeof result === 'object' && !Array.isArray(result) ? result : {};
 
+		const body = result.body || {};
+		const code = result.code || 200;
+
+		if(result.message)
+			body.message = result.message;
+
+		if(code >= 400)
+			logger.error(`API Request ${code}: [${req.method}] ${req.originalUrl} - ${body.message || 'internal server error'}`);
+
 		res
 			.set(result.headers || {})
-			.status(result.code || 200)
-			.json(result.body || {});
+			.status(code)
+			.json(body);
 	}
 
 	/**

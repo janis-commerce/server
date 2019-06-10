@@ -1,6 +1,6 @@
 # Server
 
-coming soon.
+A package for managing a Server with HTTP Server.
 
 ## Installation
 

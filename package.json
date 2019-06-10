@@ -1,7 +1,7 @@
 {
   "name": "@janiscommerce/server",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "A package for managing a Server with HTTP Server",
   "main": "index.js",
   "scripts": {
     "debug": "nodemon debug.js -p 3088 \"-w 1\"",
