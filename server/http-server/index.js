@@ -7,7 +7,7 @@ const minimist = require('minimist');
 
 const SchemaValidator = require('@janiscommerce/schema-validator');
 const API = require('@janiscommerce/api');
-// const APIView = require('@janiscommerce/api-view');
+const APIView = require('@janiscommerce/api-view');
 const logger = require('@janiscommerce/logger');
 
 /**
@@ -180,16 +180,14 @@ class HTTPServer {
 
 	async dispatchView(req, res) {
 
-		logger.info(`VIEW Request: [${req.method}] ${req.originalUrl}`);
+		logger.info(`API VIEW Request: [${req.method}] ${req.originalUrl}`);
 
-		console.log(req.params);
-
-		const api = new API({
-			endpoint: req.params[0],
-			method: req.method.toLowerCase(),
-			data: req.method === 'GET' ? req.query : req.body,
-			headers: req.headers,
-			cookies: req.cookies
+		const api = new APIView({
+			entity: req.params.entity,
+			action: req.params.action,
+			method: req.params.method,
+			entityId: req.params.entityId,
+			data: req.method === 'GET' ? req.query : req.body
 		});
 
 		let result = await api.dispatch();
@@ -266,9 +264,7 @@ class HTTPServer {
 
 	async dispatch(req, res) {
 
-		logger.info(`Request: [${req.method}] ${req.originalUrl}`);
-
-		console.log(req.params);
+		logger.info(`API Request: [${req.method}] ${req.originalUrl}`);
 
 		const api = new API({
 			endpoint: req.params[0],
