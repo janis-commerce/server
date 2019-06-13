@@ -13,7 +13,7 @@ const minimist = require('minimist');
 
 const logger = require('@janiscommerce/logger');
 
-const HTTPServer = require('./http-server');
+const HTTPServer = require('./../http-server');
 
 //
 

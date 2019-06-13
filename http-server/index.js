@@ -5,9 +5,6 @@ const minimist = require('minimist');
 
 //
 
-const SchemaValidator = require('@janiscommerce/schema-validator');
-const API = require('@janiscommerce/api');
-const APIView = require('@janiscommerce/api-view');
 const logger = require('@janiscommerce/logger');
 
 /**
@@ -22,6 +19,8 @@ const cookieParser = require('cookie-parser');
 
 const ServerError = require('./error');
 const enableShutdown = require('./close');
+
+const { APIRestHandler, APIViewHandler } = require('./api-handlers');
 
 class HTTPServer {
 
@@ -75,9 +74,9 @@ class HTTPServer {
 		this.app.use(ServerError.middleware);
 
 		// must be first than api requests because /api/view/... is more especifica than /api/...
-		this.handleAPIViewRequests();
+		APIViewHandler.use(this.app, this.options);
 
-		this.handleAPIRequests();
+		APIRestHandler.use(this.app, this.options);
 
 		// Handle not matching requests - 404
 		this.app.use(ServerError.notFound);
@@ -157,99 +156,6 @@ class HTTPServer {
 		return typeof this.options.shouldEnforceSSL === 'undefined' || !!this.options.shouldEnforceSSL;
 	}
 
-	/**
-	 * Handle API View Requests
-	 * 	endpoints:
-	 *			/api/view/:entity/:section/:method/path
-	 */
-	handleAPIViewRequests() {
-		const viewRoutes = '/api/view/:entity/:action/:method';
-		this.app.all([viewRoutes, `${viewRoutes}/:entityId`], this.APIViewHandler());
-	}
-
-	APIViewHandler() {
-		return [
-			// Add Allow origin
-			this.options.cors ? this.corsMiddleware() : null,
-
-			// Dispatch request
-			this.dispatchView.bind(this)
-		].filter(Boolean);
-	}
-
-	/**
-	 * Dispatch an API View
-	 *
-	 * @param {Function} APIHandler The api handler
-	 */
-
-	async dispatchView(req, res) {
-
-		logger.info(`API VIEW Request: [${req.method}] ${req.originalUrl}`);
-
-		const api = new APIView({
-			entity: req.params.entity,
-			action: req.params.action,
-			method: req.params.method,
-			entityId: req.params.entityId,
-			data: req.method === 'GET' ? req.query : req.body
-		});
-
-		let result = await api.dispatch();
-		result = typeof result === 'object' && !Array.isArray(result) ? result : {};
-
-		res
-			.set(result.headers || {})
-			.status(result.code || 200)
-			.json(result.body || {});
-	}
-
-	/**
-	*	Handle API request.
-	*/
-	handleAPIRequests() {
-		const apiRoutes = /^\/api((?:\/(?:[a-z-]+)(?:\/(?:[a-f0-9-]+))?)+)$/i;
-		this.app.all(apiRoutes, this.APIHandler());
-	}
-
-	/**
-	 *	API middleares
-	 *
-	 */
-	APIHandler() {
-		return [
-
-			// Add Allow origin
-			this.options.cors ? this.corsMiddleware() : null,
-
-			// Schema Validation OpenAPI 3.0 (public.json)
-			// this.validateSchema.bind(this),
-
-			// Dispatch request
-			this.dispatch.bind(this)
-
-		].filter(Boolean);
-	}
-
-	validateSchema(req, res, next) {
-
-		let schemaValidator;
-
-		try {
-			schemaValidator = new SchemaValidator(req.path, req.method);
-		} catch(err) {
-			return ServerError.internalServerError(err, req, res);
-		}
-
-		try {
-			schemaValidator.validate();
-		} catch(err) {
-			return ServerError.notFound(req, res, next, err.message);
-		}
-
-		next();
-	}
-
 	corsMiddleware() {
 
 		/* eslint-disable global-require */
@@ -258,43 +164,6 @@ class HTTPServer {
 		cors(this.options.corsOptions);
 
 		return null;
-	}
-
-	/**
-	 * Dispatch an API
-	 *
-	 * @param {object} req The express request
-	 * @param {object} res The express response
-	 */
-
-	async dispatch(req, res) {
-
-		logger.info(`API Request: [${req.method}] ${req.originalUrl}`);
-
-		const api = new API({
-			endpoint: req.params[0],
-			method: req.method.toLowerCase(),
-			data: req.method === 'GET' ? req.query : req.body,
-			headers: req.headers,
-			cookies: req.cookies
-		});
-
-		let result = await api.dispatch();
-		result = typeof result === 'object' && !Array.isArray(result) ? result : {};
-
-		const body = result.body || {};
-		const code = result.code || 200;
-
-		if(result.message)
-			body.message = result.message;
-
-		if(code >= 400)
-			logger.error(`API Request ${code}: [${req.method}] ${req.originalUrl} - ${body.message || 'internal server error'}`);
-
-		res
-			.set(result.headers || {})
-			.status(code)
-			.json(body);
 	}
 
 	/**
