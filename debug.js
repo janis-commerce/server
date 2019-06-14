@@ -1,5 +1,5 @@
 'use strict';
 
-const Server = require('./server');
+const Server = require('./lib');
 
-new Server();
+new Server({ cors: true });
