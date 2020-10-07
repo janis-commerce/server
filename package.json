@@ -2,13 +2,13 @@
   "name": "@janiscommerce/server",
   "version": "1.2.2",
   "description": "A package for managing a Server with HTTP Server",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "debug": "nodemon debug.js -p 3088 \"-w 1\"",
     "test": "export TEST_ENV=true; mocha --exit -R nyan --recursive tests/",
     "watch-test": "export TEST_ENV=true; mocha --exit -R nyan -w --recursive",
     "coverage": "nyc npm test",
-    "lint": "eslint index.js lib/ tests/"
+    "lint": "eslint lib/ tests/"
   },
   "author": "Janis",
   "license": "ISC",
@@ -21,21 +21,20 @@
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.3",
-    "husky": "^2.4.1",
+    "husky": "^4.3.0",
     "mocha": "^5.2.0",
     "nyc": "^14.1.0",
-    "sinon": "^7.3.2"
+    "sinon": "^7.5.0"
   },
   "dependencies": {
-    "@janiscommerce/api": "^1.4.0",
-    "@janiscommerce/api-view": "^1.2.0",
-    "@janiscommerce/logger": "^1.1.0",
+    "@janiscommerce/api": "^6.0.1",
     "compression": "^1.7.4",
     "connect-timeout": "^1.9.0",
-    "cookie-parser": "^1.4.4",
+    "cookie-parser": "^1.4.5",
     "express": "^4.17.1",
-    "helmet": "^3.18.0",
-    "minimist": "^1.2.0"
+    "helmet": "^3.23.3",
+    "lllog": "^1.1.2",
+    "minimist": "^1.2.5"
   },
   "directories": {
     "test": "tests"
