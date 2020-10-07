@@ -6,6 +6,7 @@
   "scripts": {
     "debug": "nodemon debug.js -p 3088 \"-w 1\"",
     "test": "export TEST_ENV=true; mocha --exit -R nyan --recursive tests/",
+    "test-ci": "nyc --reporter=lcov --reporter=text-summary mocha --exit --recursive tests/",
     "watch-test": "export TEST_ENV=true; mocha --exit -R nyan -w --recursive",
     "coverage": "nyc npm test",
     "lint": "eslint lib/ tests/"
