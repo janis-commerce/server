@@ -35,7 +35,7 @@ Use this options to configurate the server instance
 | Option | Type | Description | Attributes | Default value |
 |--------|------|-------------|------------|---------------|
 | validateSchemas | boolean | Indicates if the server has to validate the api schemas using the package [@janiscommerce/schema-validator](https://www.npmjs.com/package/@janiscommerce/schema-validator) | | false |
-| cors | object | Used to implement APIs [Cors](https://www.npmjs.com/package/cors) configuration as custom props. If options is `undefined` or set to `true` it will use the default CORS config for every property.| | [See below](#cors-default) |
+| cors | boolean|object | Used to implement APIs [Cors](https://www.npmjs.com/package/cors) configuration as custom props. If option is `true` it will use the default CORS configs.| | [See below](#cors-default) |
 | authorizationClass | object | A class that implements the authorization logic | | |
 
 #### CORS Default:
