@@ -32,11 +32,11 @@ new Server({
 
 Use this options to configurate the server instance
 
-| Option | Type | Description | Attributes | Default value |
+| Option | Type | Description | Default value | Extras |
 |--------|------|-------------|------------|---------------|
-| validateSchemas | boolean | Indicates if the server has to validate the api schemas using the package [@janiscommerce/schema-validator](https://www.npmjs.com/package/@janiscommerce/schema-validator) | | false |
-| cors | boolean|object | Used to implement APIs [Cors](https://www.npmjs.com/package/cors) configuration as custom props. If option is `true` it will use the default CORS configs.| | [See below](#cors-default) |
-| authorizationClass | object | A class that implements the authorization logic | | |
+| validateSchemas | boolean | Indicates if the server has to validate the api schemas using the package [@janiscommerce/schema-validator](https://www.npmjs.com/package/@janiscommerce/schema-validator) | false | |
+| cors | boolean|object | Used to implement APIs [Cors](https://www.npmjs.com/package/cors) configuration as custom props. If option is `true` it will use the default CORS configs.| [See below](#cors-default) | |
+| authorizationClass | object | A class that implements the authorization logic | | [See below](#autorization-class) |
 
 #### CORS Default:
 
@@ -58,4 +58,47 @@ Use this options to configurate the server instance
 	allowCredentials: true,
 	maxAge: 600
 }
+```
+
+## Autorization Class
+
+### validateRequest(request, response)
+This method is required, and should have the logic of your authorizacion. Receives by parameters the request and response objects
+
+```js
+'use strict';
+
+const SchemaValidator = require('@janiscommerce/schema-validator');
+
+const authorizationHeaders = ['api-key', 'api-secret'];
+
+module.exports = class Authorization {
+
+	async validateRequest(request, response) {
+
+		{ headers: this.headers} = request;
+
+		if(!this.requestHasAuthorizationHeaders(authorizationHeaders))
+			throw new Error('Request has not the api keys headers or are empty');
+
+		return this.validateApiSecuritySchemas();
+	}
+
+	requestHasAuthorizationHeaders(authorizationHeaders) {
+
+		for(const authorizationHeader of authorizationHeaders) {
+			if(!this.headers[authorizationHeader])
+				return false;
+		}
+
+		return true;
+	}
+
+	validateApiSecuritySchemas() {
+
+		// validation code
+	}
+
+};
+
 ```
